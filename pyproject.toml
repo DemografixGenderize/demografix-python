@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "demografix"
+version = "0.1.0"
+description = "Official Python SDK for the Demografix APIs: genderize.io, agify.io, nationalize.io."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Demografix", email = "info@genderize.io" }]
+keywords = ["genderize", "agify", "nationalize", "demografix", "demographics"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.urls]
+Homepage = "https://genderize.io"
+Documentation = "https://genderize.io/documentation/api"
+Repository = "https://github.com/DemografixGenderize/demografix-python"
+Issues = "https://github.com/DemografixGenderize/demografix-python/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/demografix"]
+# PEP 561: ship the py.typed marker so type checkers pick up the inline types.
+force-include = { "src/demografix/py.typed" = "demografix/py.typed" }
