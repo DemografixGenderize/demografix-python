@@ -1,8 +1,7 @@
 """Summarize the demographic mix of a list of names.
 
 Run a roster through all three services in batches of 10 and print an aggregate
-gender split, age distribution, and nationality mix. The output describes the
-group, never an individual.
+gender split, age distribution, and nationality mix across the whole list.
 
 Usage:
     DEMOGRAFIX_API_KEY=your_key python examples/demographics_summary.py

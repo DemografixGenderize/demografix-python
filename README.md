@@ -31,8 +31,6 @@ print(split)                      # Counter({'male': 3, 'female': 2})
 print(batch.quota.remaining)      # 24987
 ```
 
-The deliverable is the aggregate split across the list, not a label on any one name.
-
 ## API keys
 
 An API key is required. Creating one is free and includes 2,500 requests per month. Generate a key in your
