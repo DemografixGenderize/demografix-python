@@ -87,7 +87,7 @@ def patch(monkeypatch):
 
 def test_genderize_single(patch):
     rec = patch(200, {"count": 1352696, "name": "peter", "gender": "male", "probability": 1.0})
-    result = Demografix().genderize("peter")
+    result = Demografix("test-key").genderize("peter")
     assert result.name == "peter"
     assert result.gender == "male"
     assert result.probability == 1.0
@@ -102,7 +102,7 @@ def test_genderize_single(patch):
 
 def test_agify_single(patch):
     patch(200, {"count": 311558, "name": "michael", "age": 57})
-    result = Demografix().agify("michael")
+    result = Demografix("test-key").agify("michael")
     assert result.name == "michael"
     assert result.age == 57
     assert result.count == 311558
@@ -121,7 +121,7 @@ def test_nationalize_single(patch):
             ],
         },
     )
-    result = Demografix().nationalize("nguyen")
+    result = Demografix("test-key").nationalize("nguyen")
     assert result.name == "nguyen"
     assert len(result.country) == 2
     assert result.country[0].country_id == "VN"
@@ -140,7 +140,7 @@ def test_agify_batch_order(patch):
             {"count": 55682, "name": "matthew", "age": 48},
         ],
     )
-    batch = Demografix().agify_batch(["michael", "matthew"])
+    batch = Demografix("test-key").agify_batch(["michael", "matthew"])
     assert [r.name for r in batch.results] == ["michael", "matthew"]
     assert [r.age for r in batch.results] == [57, 48]
     assert batch.quota.remaining == 24987
@@ -154,7 +154,7 @@ def test_agify_batch_order(patch):
 
 def test_genderize_null(patch):
     patch(200, {"name": "xÿz", "gender": None, "probability": 0.0, "count": 0})
-    result = Demografix().genderize("xÿz")
+    result = Demografix("test-key").genderize("xÿz")
     assert result.gender is None
     assert result.probability == 0.0
     assert result.count == 0
@@ -162,14 +162,14 @@ def test_genderize_null(patch):
 
 def test_agify_null(patch):
     patch(200, {"name": "xÿz", "age": None, "count": 0})
-    result = Demografix().agify("xÿz")
+    result = Demografix("test-key").agify("xÿz")
     assert result.age is None
     assert result.count == 0
 
 
 def test_nationalize_null(patch):
     patch(200, {"name": "xÿz", "country": [], "count": 0})
-    result = Demografix().nationalize("xÿz")
+    result = Demografix("test-key").nationalize("xÿz")
     assert result.country == []
     assert result.count == 0
 
@@ -188,7 +188,7 @@ def test_country_id_round_trip(patch):
             "probability": 0.94,
         },
     )
-    result = Demografix().genderize("kim", country_id="us")
+    result = Demografix("test-key").genderize("kim", country_id="us")
     assert "country_id=us" in rec.url
     assert result.country_id == "US"
     assert result.gender == "female"
@@ -196,7 +196,7 @@ def test_country_id_round_trip(patch):
 
 def test_agify_country_id_round_trip(patch):
     rec = patch(200, {"count": 100, "name": "kim", "age": 40, "country_id": "US"})
-    result = Demografix().agify("kim", country_id="US")
+    result = Demografix("test-key").agify("kim", country_id="US")
     assert "country_id=US" in rec.url
     assert result.country_id == "US"
 
@@ -211,7 +211,7 @@ def test_batch_over_ten_no_http(monkeypatch):
     monkeypatch.setattr(urllib.request, "urlopen", boom)
     names = ["n%d" % i for i in range(11)]
     with pytest.raises(ValidationError) as exc:
-        Demografix().genderize_batch(names)
+        Demografix("test-key").genderize_batch(names)
     assert exc.value.status == 422
 
 
@@ -221,7 +221,7 @@ def test_batch_over_ten_no_http(monkeypatch):
 def test_401_auth_error(patch):
     patch(401, {"error": "Invalid API key"})
     with pytest.raises(AuthError) as exc:
-        Demografix().genderize("peter")
+        Demografix("test-key").genderize("peter")
     assert exc.value.status == 401
     assert exc.value.message == "Invalid API key"
 
@@ -229,7 +229,7 @@ def test_401_auth_error(patch):
 def test_402_subscription_error(patch):
     patch(402, {"error": "Subscription is not active"})
     with pytest.raises(SubscriptionError) as exc:
-        Demografix().genderize("peter")
+        Demografix("test-key").genderize("peter")
     assert exc.value.status == 402
     assert exc.value.message == "Subscription is not active"
 
@@ -237,7 +237,7 @@ def test_402_subscription_error(patch):
 def test_422_validation_error(patch):
     patch(422, {"error": "Missing 'name' parameter"})
     with pytest.raises(ValidationError) as exc:
-        Demografix().genderize("peter")
+        Demografix("test-key").genderize("peter")
     assert exc.value.status == 422
     assert exc.value.message == "Missing 'name' parameter"
 
@@ -245,7 +245,7 @@ def test_422_validation_error(patch):
 def test_429_rate_limit_error_carries_quota(patch):
     patch(429, {"error": "Request limit reached"})
     with pytest.raises(RateLimitError) as exc:
-        Demografix().genderize("peter")
+        Demografix("test-key").genderize("peter")
     assert exc.value.status == 429
     assert exc.value.message == "Request limit reached"
     assert exc.value.quota is not None
@@ -263,20 +263,39 @@ def test_headers_parsed_case_insensitively(patch):
         "X-Rate-Limit-Reset": "1314000",
     }
     patch(200, {"count": 1, "name": "peter", "gender": "male", "probability": 1.0}, headers=upper)
-    result = Demografix().genderize("peter")
+    result = Demografix("test-key").genderize("peter")
     assert result.quota.remaining == 24987
 
 
-# -- apikey only sent when set ------------------------------------------------
+# -- apikey always sent --------------------------------------------------------
 
 
-def test_apikey_omitted_when_absent(patch):
+def test_apikey_always_sent(patch):
     rec = patch(200, {"count": 1, "name": "peter", "gender": "male", "probability": 1.0})
-    Demografix().genderize("peter")
-    assert "apikey" not in rec.url
+    Demografix("test-key").genderize("peter")
+    assert "apikey=test-key" in rec.url
 
 
 def test_apikey_sent_when_present(patch):
     rec = patch(200, {"count": 1, "name": "peter", "gender": "male", "probability": 1.0})
     Demografix(api_key="secret").genderize("peter")
     assert "apikey=secret" in rec.url
+
+
+# -- 7. constructing without an api_key raises client-side, no HTTP ------------
+
+
+@pytest.mark.parametrize("bad_key", ["", "   "])
+def test_missing_api_key_raises_no_http(monkeypatch, bad_key):
+    def boom(*args, **kwargs):
+        raise AssertionError("no HTTP call must be made")
+
+    monkeypatch.setattr(urllib.request, "urlopen", boom)
+    with pytest.raises(ValidationError) as exc:
+        Demografix(bad_key)
+    assert "api_key is required" in str(exc.value)
+
+
+def test_missing_api_key_argument_raises():
+    with pytest.raises(TypeError):
+        Demografix()  # type: ignore[call-arg]

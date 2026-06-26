@@ -55,16 +55,18 @@ class Demografix:
     """Synchronous client for genderize, agify, and nationalize.
 
     Args:
-        api_key: Optional API key. When omitted, requests use the free per-IP
-            tier. The same key works across all three services.
+        api_key: API key, required. The same key works across all three
+            services. An empty or blank key raises :class:`ValidationError`.
         timeout: Per-request timeout in seconds. Defaults to 10.
     """
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
+        api_key: str,
         timeout: float = DEFAULT_TIMEOUT,
     ) -> None:
+        if not api_key or not api_key.strip():
+            raise ValidationError("api_key is required", status=422)
         self._api_key = api_key
         self._timeout = timeout
 
@@ -165,8 +167,7 @@ class Demografix:
                 params.append(("name[]", name))
         if country_id is not None:
             params.append(("country_id", country_id))
-        if self._api_key is not None:
-            params.append(("apikey", self._api_key))
+        params.append(("apikey", self._api_key))
         return urllib.parse.urlencode(params)
 
     def _decode(self, status: int, raw: bytes, quota: Quota) -> Any:

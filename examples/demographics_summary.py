@@ -5,7 +5,6 @@ gender split, age distribution, and nationality mix. The output describes the
 group, never an individual.
 
 Usage:
-    python examples/demographics_summary.py
     DEMOGRAFIX_API_KEY=your_key python examples/demographics_summary.py
 """
 
@@ -32,7 +31,10 @@ def chunked(items, size):
 
 
 def main():
-    client = Demografix(api_key=os.environ.get("DEMOGRAFIX_API_KEY"))
+    api_key = os.environ.get("DEMOGRAFIX_API_KEY")
+    if not api_key:
+        raise SystemExit("Set DEMOGRAFIX_API_KEY to run this example.")
+    client = Demografix(api_key=api_key)
 
     genders = Counter()
     ages = []

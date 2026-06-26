@@ -1,8 +1,8 @@
 # Demografix Python SDK
 
-Predict gender, age, and nationality for lists of names through one client. The package covers
-[genderize.io](https://genderize.io), [agify.io](https://agify.io), and
-[nationalize.io](https://nationalize.io), and reports the remaining quota carried on every response.
+Run demographic analysis over names — predicted gender, age, and nationality — from one client. The package
+covers [genderize.io](https://genderize.io), [agify.io](https://agify.io), and
+[nationalize.io](https://nationalize.io).
 
 ## Install
 
@@ -20,7 +20,7 @@ Construct a client, run a list of names through a batch call, read the predictio
 from collections import Counter
 from demografix import Demografix
 
-client = Demografix(api_key="YOUR_API_KEY")  # api_key is optional
+client = Demografix(api_key="YOUR_API_KEY")
 
 names = ["michael", "matthew", "jane", "sofia", "lars"]
 
@@ -35,9 +35,9 @@ The deliverable is the aggregate split across the list, not a label on any one n
 
 ## API keys
 
-Create a key in your account dashboard at [genderize.io](https://genderize.io),
-[agify.io](https://agify.io), or [nationalize.io](https://nationalize.io). One key works across all three
-services and shares one quota. Pass it as `api_key`. Without a key, requests use the free per-IP tier.
+An API key is required. Creating one is free and includes 2,500 requests per month. Generate a key in your
+dashboard at [genderize.io](https://genderize.io), [agify.io](https://agify.io), or
+[nationalize.io](https://nationalize.io). One key works across all three services.
 
 ## Usage
 
