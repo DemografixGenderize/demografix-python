@@ -149,6 +149,45 @@ def test_agify_batch_order(patch):
     assert "name%5B%5D=matthew" in rec.url
 
 
+# -- 2b. a one-name batch still sends name[] and parses a list -----------------
+
+
+def test_genderize_batch_single_name(patch):
+    rec = patch(200, [{"count": 1352696, "name": "peter", "gender": "male", "probability": 1.0}])
+    batch = Demografix("test-key").genderize_batch(["peter"])
+    assert [r.name for r in batch.results] == ["peter"]
+    assert batch.results[0].gender == "male"
+    assert batch.quota.remaining == 24987
+    assert "name%5B%5D=peter" in rec.url
+    assert "name=peter" not in rec.url
+
+
+def test_agify_batch_single_name(patch):
+    rec = patch(200, [{"count": 311558, "name": "michael", "age": 57}])
+    batch = Demografix("test-key").agify_batch(["michael"])
+    assert [r.age for r in batch.results] == [57]
+    assert "name%5B%5D=michael" in rec.url
+    assert "name=michael" not in rec.url
+
+
+def test_nationalize_batch_single_name(patch):
+    rec = patch(
+        200,
+        [
+            {
+                "count": 100783,
+                "name": "nguyen",
+                "country": [{"country_id": "VN", "probability": 0.891132}],
+            }
+        ],
+    )
+    batch = Demografix("test-key").nationalize_batch(["nguyen"])
+    assert [r.name for r in batch.results] == ["nguyen"]
+    assert batch.results[0].country[0].country_id == "VN"
+    assert "name%5B%5D=nguyen" in rec.url
+    assert "name=nguyen" not in rec.url
+
+
 # -- 3. null prediction is a normal success ----------------------------------
 
 

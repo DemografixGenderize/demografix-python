@@ -33,7 +33,7 @@ from .models import (
     Quota,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 GENDERIZE_HOST = "https://api.genderize.io"
 AGIFY_HOST = "https://api.agify.io"
@@ -117,7 +117,7 @@ class Demografix:
     ) -> Batch:
         """Predict gender for up to 10 names. Optionally scope by ``country_id``."""
         self._check_batch(names)
-        body, quota = self._get(GENDERIZE_HOST, names, country_id)
+        body, quota = self._get(GENDERIZE_HOST, names, country_id, batch=True)
         results = [_parse_genderize(item) for item in body]
         return Batch(results=results, quota=quota)
 
@@ -126,14 +126,14 @@ class Demografix:
     ) -> Batch:
         """Predict age for up to 10 names. Optionally scope by ``country_id``."""
         self._check_batch(names)
-        body, quota = self._get(AGIFY_HOST, names, country_id)
+        body, quota = self._get(AGIFY_HOST, names, country_id, batch=True)
         results = [_parse_agify(item) for item in body]
         return Batch(results=results, quota=quota)
 
     def nationalize_batch(self, names: list[str]) -> Batch:
         """Predict nationality for up to 10 names."""
         self._check_batch(names)
-        body, quota = self._get(NATIONALIZE_HOST, names, None)
+        body, quota = self._get(NATIONALIZE_HOST, names, None, batch=True)
         results = [_parse_nationalize(item) for item in body]
         return Batch(results=results, quota=quota)
 
@@ -148,23 +148,29 @@ class Demografix:
             )
 
     def _get(
-        self, host: str, names: list[str], country_id: Optional[str]
+        self,
+        host: str,
+        names: list[str],
+        country_id: Optional[str],
+        batch: bool = False,
     ) -> tuple[Any, Quota]:
         """Build the URL, dispatch through the seam, decode, and map errors."""
-        url = host + "/?" + self._build_query(names, country_id)
+        url = host + "/?" + self._build_query(names, country_id, batch)
         status, headers, raw = self._request(url)
         quota = _parse_quota(headers)
         return self._decode(status, raw, quota), quota
 
     def _build_query(
-        self, names: list[str], country_id: Optional[str]
+        self, names: list[str], country_id: Optional[str], batch: bool
     ) -> str:
         params: list[tuple[str, str]] = []
-        if len(names) == 1:
-            params.append(("name", names[0]))
-        else:
+        if batch:
+            # Always name[], even for one name: the API keys its response
+            # shape on the parameter form, and a batch call must get a list.
             for name in names:
                 params.append(("name[]", name))
+        else:
+            params.append(("name", names[0]))
         if country_id is not None:
             params.append(("country_id", country_id))
         params.append(("apikey", self._api_key))
