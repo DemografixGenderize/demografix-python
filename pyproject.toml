@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "demografix"
-version = "0.2.0"
+version = "0.2.1"
 description = "Predict gender, age, and nationality from names. Official Python client for the genderize.io, agify.io, and nationalize.io APIs, with batches of up to 100 names per request."
 readme = "README.md"
 requires-python = ">=3.10"
