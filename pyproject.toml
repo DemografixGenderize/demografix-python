@@ -4,14 +4,33 @@ build-backend = "hatchling.build"
 
 [project]
 name = "demografix"
-version = "0.1.1"
-description = "Official Python SDK for the Demografix APIs: genderize.io, agify.io, nationalize.io."
+version = "0.2.0"
+description = "Predict gender, age, and nationality from first names. Official Python client for the genderize.io, agify.io, and nationalize.io APIs, with batches of up to 100 names per request."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Demografix", email = "info@genderize.io" }]
-keywords = ["genderize", "agify", "nationalize", "demografix", "demographics"]
+keywords = [
+    "gender",
+    "age",
+    "nationality",
+    "name",
+    "first name",
+    "gender detection",
+    "gender from name",
+    "age prediction",
+    "name prediction",
+    "demographics",
+    "batch",
+    "bulk",
+    "api",
+    "api client",
+    "genderize",
+    "agify",
+    "nationalize",
+    "demografix",
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -21,6 +40,10 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
 ]
 dependencies = []
 

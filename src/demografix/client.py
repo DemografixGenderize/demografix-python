@@ -33,7 +33,7 @@ from .models import (
     Quota,
 )
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 GENDERIZE_HOST = "https://api.genderize.io"
 AGIFY_HOST = "https://api.agify.io"
@@ -41,7 +41,7 @@ NATIONALIZE_HOST = "https://api.nationalize.io"
 USER_AGENT = "demografix-python/" + __version__
 
 DEFAULT_TIMEOUT = 10.0
-MAX_BATCH = 10
+MAX_BATCH = 100
 
 _ERROR_TYPES = {
     401: AuthError,
@@ -115,7 +115,7 @@ class Demografix:
     def genderize_batch(
         self, names: list[str], country_id: Optional[str] = None
     ) -> Batch:
-        """Predict gender for up to 10 names. Optionally scope by ``country_id``."""
+        """Predict gender for up to 100 names. Optionally scope by ``country_id``."""
         self._check_batch(names)
         body, quota = self._get(GENDERIZE_HOST, names, country_id, batch=True)
         results = [_parse_genderize(item) for item in body]
@@ -124,14 +124,14 @@ class Demografix:
     def agify_batch(
         self, names: list[str], country_id: Optional[str] = None
     ) -> Batch:
-        """Predict age for up to 10 names. Optionally scope by ``country_id``."""
+        """Predict age for up to 100 names. Optionally scope by ``country_id``."""
         self._check_batch(names)
         body, quota = self._get(AGIFY_HOST, names, country_id, batch=True)
         results = [_parse_agify(item) for item in body]
         return Batch(results=results, quota=quota)
 
     def nationalize_batch(self, names: list[str]) -> Batch:
-        """Predict nationality for up to 10 names."""
+        """Predict nationality for up to 100 names."""
         self._check_batch(names)
         body, quota = self._get(NATIONALIZE_HOST, names, None, batch=True)
         results = [_parse_nationalize(item) for item in body]

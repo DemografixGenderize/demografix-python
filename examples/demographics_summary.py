@@ -1,6 +1,6 @@
 """Summarize the demographic mix of a list of names.
 
-Run a roster through all three services in batches of 10 and print an aggregate
+Run a roster through all three services in batches of 100 and print an aggregate
 gender split, age distribution, and nationality mix across the whole list.
 
 Usage:
@@ -40,7 +40,7 @@ def main():
     countries = Counter()
     remaining = None
 
-    for chunk in chunked(NAMES, 10):
+    for chunk in chunked(NAMES, 100):
         g = client.genderize_batch(chunk)
         a = client.agify_batch(chunk)
         n = client.nationalize_batch(chunk)

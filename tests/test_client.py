@@ -240,15 +240,15 @@ def test_agify_country_id_round_trip(patch):
     assert result.country_id == "US"
 
 
-# -- 5. batch over 10 raises client-side, no HTTP ----------------------------
+# -- 5. batch over 100 raises client-side, no HTTP ---------------------------
 
 
-def test_batch_over_ten_no_http(monkeypatch):
+def test_batch_over_max_no_http(monkeypatch):
     def boom(*args, **kwargs):
         raise AssertionError("no HTTP call must be made")
 
     monkeypatch.setattr(urllib.request, "urlopen", boom)
-    names = ["n%d" % i for i in range(11)]
+    names = ["n%d" % i for i in range(101)]
     with pytest.raises(ValidationError) as exc:
         Demografix("test-key").genderize_batch(names)
     assert exc.value.status == 422

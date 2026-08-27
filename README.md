@@ -1,12 +1,17 @@
 # Demografix Python SDK
 
-Run demographic analysis over names — predicted gender, age, and nationality — from one client. The package
-covers [genderize.io](https://genderize.io), [agify.io](https://agify.io), and
-[nationalize.io](https://nationalize.io).
+Predict gender, age, and nationality from first names. One Python client covers all three Demografix
+APIs — [genderize.io](https://genderize.io) (gender), [agify.io](https://agify.io) (age), and
+[nationalize.io](https://nationalize.io) (nationality) — with single-name lookups and batches of up
+to 100 names per request.
+
+[![PyPI](https://img.shields.io/pypi/v/demografix)](https://pypi.org/project/demografix/)
+[![CI](https://github.com/DemografixGenderize/demografix-python/actions/workflows/ci.yml/badge.svg)](https://github.com/DemografixGenderize/demografix-python/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 ## Install
 
-```
+```sh
 pip install demografix
 ```
 
@@ -31,27 +36,31 @@ print(split)                      # Counter({'male': 3, 'female': 2})
 print(batch.quota.remaining)      # 24987
 ```
 
-## API keys
+## genderize
 
-An API key is required. Creating one is free and includes 2,500 requests per month. Generate a key in your
-dashboard at [genderize.io](https://genderize.io), [agify.io](https://agify.io), or
-[nationalize.io](https://nationalize.io). One key works across all three services.
-
-## Usage
-
-### Gender
+Predict gender. A single call returns the prediction fields plus a `quota`.
 
 ```python
 result = client.genderize("peter")
 result.gender          # "male", "female", or None
 result.probability     # 1.0
 result.count           # 1352696
+result.quota.remaining # 24987
+```
 
+The batch form reduces a list to a gender split.
+
+```python
 batch = client.genderize_batch(["michael", "matthew", "jane"])
 gender_mix = Counter(r.gender or "unknown" for r in batch.results)
 ```
 
-### Age
+`gender` is `None` when no match is found, with `probability` `0.0` and `count` `0`. That is a
+successful response, not an error.
+
+## agify
+
+Predict age. Aggregate a batch into an age distribution.
 
 ```python
 result = client.agify("michael")
@@ -63,7 +72,11 @@ ages = [r.age for r in batch.results if r.age is not None]
 average_age = sum(ages) / len(ages)
 ```
 
-### Nationality
+`age` is an integer or `None`.
+
+## nationalize
+
+Predict nationality. Each prediction carries up to five candidate countries in descending probability.
 
 ```python
 result = client.nationalize("nguyen")
@@ -76,25 +89,47 @@ top_countries = Counter(
 )
 ```
 
-Each batch accepts at most 10 names. A batch of more than 10 raises `ValidationError` before any request
-goes out.
+`country` is an empty list when no match is found.
+
+## Batch limit
+
+Each batch accepts at most 100 names. A batch of more than 100 raises `ValidationError` before any
+request goes out. Chunk a longer list and aggregate across the chunks.
+
+```python
+def chunked(items, size=100):
+    for i in range(0, len(items), size):
+        yield items[i : i + size]
+
+split = Counter()
+for chunk in chunked(roster):
+    batch = client.genderize_batch(chunk)
+    split.update(r.gender or "unknown" for r in batch.results)
+```
 
 ## country_id
 
-`genderize` and `agify` accept an optional `country_id` (ISO 3166-1 alpha-2) to scope the prediction to one
-country. Input is case-insensitive; the response echoes it uppercase. `nationalize` has no such parameter.
+`genderize` and `agify` accept an optional `country_id` (ISO 3166-1 alpha-2) to scope the prediction
+to one country. Input is case-insensitive; the response echoes it uppercase on every prediction.
+`nationalize` has no such parameter.
 
 ```python
 result = client.genderize("kim", country_id="us")
 result.country_id      # "US"
 
-batch = client.agify_batch(["michael", "matthew"], country_id="us")
+# Scope a whole list, then aggregate.
+batch = client.agify_batch(["kim", "andrea", "jan"], country_id="us")
+ages = [r.age for r in batch.results if r.age is not None]
+batch.results[0].country_id   # "US", echoed uppercase on each prediction
 ```
+
+Scoping changes the prediction: `andrea` reads mostly female in the United States and mostly male in
+Italy. When the request sends no `country_id`, the field is `None`.
 
 ## Quota
 
-Every result and every raised error carries a `quota` read from the response headers. Quota is never cached
-on the client; read it from the returned value.
+Every result and every raised error carries a `quota` read from the response headers. Quota is never
+cached on the client; read it from the returned value.
 
 | Field | Meaning |
 |---|---|
@@ -117,7 +152,7 @@ headers).
 |---|---|---|
 | `AuthError` | 401 | invalid or missing API key |
 | `SubscriptionError` | 402 | expired freebie or inactive subscription |
-| `ValidationError` | 422 | bad parameter, or a batch over 10 names (raised client-side) |
+| `ValidationError` | 422 | bad parameter, or a batch over 100 names (raised client-side) |
 | `RateLimitError` | 429 | window exhausted; `quota` is always populated |
 | `DemografixError` | other non-2xx | base class for the hierarchy |
 | `TransportError` | none | network error, timeout, or non-JSON body |
@@ -150,9 +185,21 @@ while True:
 | `nationalize(name)` | `NationalizeResult` | no |
 | `nationalize_batch(names)` | `Batch` of `NationalizePrediction` | no |
 
-A `*Result` exposes the prediction fields directly plus a `quota`. A `Batch` exposes `results` plus one
-`quota` for the whole response.
+A `*Result` exposes the prediction fields directly plus a `quota`. A `Batch` exposes `results` plus
+one `quota` for the whole response. `Demografix(api_key, timeout=10.0)` requires `api_key`; the host
+URLs and the User-Agent are fixed constants, not options.
 
-## Reference
+## API keys
 
-Full API reference: [genderize.io/documentation/api](https://genderize.io/documentation/api).
+An API key is required. Creating one is free and includes 2,500 names per month.
+
+Quota counts **names, not requests**. A single-name call costs 1. A batch of 100 names costs 100. The
+free tier therefore covers 2,500 names in a month however they are split across calls.
+
+Generate a key in your dashboard at [genderize.io](https://genderize.io),
+[agify.io](https://agify.io), or [nationalize.io](https://nationalize.io). One key works across all
+three services. Full reference: [genderize.io/documentation/api](https://genderize.io/documentation/api).
+
+## License
+
+MIT. See [LICENSE](LICENSE).

@@ -41,7 +41,7 @@ class SubscriptionError(DemografixError):
 
 
 class ValidationError(DemografixError):
-    """Raised on HTTP 422, and client-side when a batch exceeds 10 names."""
+    """Raised on HTTP 422, and client-side when a batch exceeds 100 names."""
 
 
 class RateLimitError(DemografixError):
