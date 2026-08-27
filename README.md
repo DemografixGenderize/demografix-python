@@ -1,6 +1,6 @@
 # Demografix Python SDK
 
-Predict gender, age, and nationality from first names. One Python client covers all three Demografix
+Predict gender, age, and nationality from names. One Python client covers all three Demografix
 APIs — [genderize.io](https://genderize.io) (gender), [agify.io](https://agify.io) (age), and
 [nationalize.io](https://nationalize.io) (nationality) — with single-name lookups and batches of up
 to 100 names per request.
@@ -38,7 +38,7 @@ print(batch.quota.remaining)      # 24987
 
 ## genderize
 
-Predict gender. A single call returns the prediction fields plus a `quota`.
+Predict gender from names. A single call returns the prediction fields plus a `quota`.
 
 ```python
 result = client.genderize("peter")
@@ -60,7 +60,7 @@ successful response, not an error.
 
 ## agify
 
-Predict age. Aggregate a batch into an age distribution.
+Predict age from names. Aggregate a batch into an age distribution.
 
 ```python
 result = client.agify("michael")
@@ -76,7 +76,7 @@ average_age = sum(ages) / len(ages)
 
 ## nationalize
 
-Predict nationality. Each prediction carries up to five candidate countries in descending probability.
+Predict nationality from names. Each prediction carries up to five candidate countries in descending probability.
 
 ```python
 result = client.nationalize("nguyen")
