@@ -1,9 +1,10 @@
 """Demografix Python SDK.
 
-One client for genderize.io, agify.io, and nationalize.io. Construct
-:class:`Demografix`, call a method, read the prediction fields and ``quota``.
+Synchronous and asynchronous clients for genderize.io, agify.io, and
+nationalize.io. Call a method, then read the prediction fields and ``quota``.
 """
 
+from .async_client import AsyncDemografix
 from .client import Demografix, __version__
 from .errors import (
     AuthError,
@@ -28,6 +29,7 @@ from .models import (
 __all__ = [
     "__version__",
     "Demografix",
+    "AsyncDemografix",
     "Quota",
     "GenderizePrediction",
     "GenderizeResult",

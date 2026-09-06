@@ -1,9 +1,9 @@
 # Demografix Python SDK
 
-Predict gender, age, and nationality from names. One Python client covers all three Demografix
+Predict gender, age, and nationality from names. The Python SDK covers all three Demografix
 APIs — [genderize.io](https://genderize.io) (gender), [agify.io](https://agify.io) (age), and
 [nationalize.io](https://nationalize.io) (nationality) — with single-name lookups and batches of up
-to 100 names per request.
+to 100 names per request. Synchronous and asynchronous clients share the same methods and models.
 
 [![PyPI](https://img.shields.io/pypi/v/demografix)](https://pypi.org/project/demografix/)
 [![CI](https://github.com/DemografixGenderize/demografix-python/actions/workflows/ci.yml/badge.svg)](https://github.com/DemografixGenderize/demografix-python/actions/workflows/ci.yml)
@@ -15,7 +15,7 @@ to 100 names per request.
 pip install demografix
 ```
 
-The SDK has zero runtime dependencies. It requires Python 3.10 or newer.
+The SDK requires Python 3.10 or newer. The asynchronous client uses `httpx`.
 
 ## Quickstart
 
@@ -35,6 +35,36 @@ split = Counter(r.gender or "unknown" for r in batch.results)
 print(split)                      # Counter({'male': 3, 'female': 2})
 print(batch.quota.remaining)      # 24987
 ```
+
+## Async client
+
+`AsyncDemografix` mirrors the synchronous API with native async HTTP. Use one client across requests so
+its connection pool can be reused, and close it with `async with` or `aclose()`.
+
+```python
+import asyncio
+from collections import Counter
+from demografix import AsyncDemografix
+
+async def main():
+    names = ["michael", "matthew", "jane", "sofia", "lars"]
+
+    async with AsyncDemografix(api_key="YOUR_API_KEY") as client:
+        genders, ages, nationalities = await asyncio.gather(
+            client.genderize_batch(names),
+            client.agify_batch(names),
+            client.nationalize_batch(names),
+        )
+
+    split = Counter(r.gender or "unknown" for r in genders.results)
+    print(split)
+    print(nationalities.quota.remaining)
+
+asyncio.run(main())
+```
+
+Task cancellation propagates normally. Network failures and timeouts raise `TransportError`, matching
+the synchronous client.
 
 ## genderize
 
@@ -186,8 +216,12 @@ while True:
 | `nationalize_batch(names)` | `Batch` of `NationalizePrediction` | no |
 
 A `*Result` exposes the prediction fields directly plus a `quota`. A `Batch` exposes `results` plus
-one `quota` for the whole response. `Demografix(api_key, timeout=10.0)` requires `api_key`; the host
-URLs and the User-Agent are fixed constants, not options.
+one `quota` for the whole response. Both `Demografix` and `AsyncDemografix` expose the methods above;
+await methods on `AsyncDemografix`. Each constructor takes `api_key` and an optional `timeout=10.0`.
+The host URLs and the User-Agent are fixed constants, not options.
+
+`AsyncDemografix` supports `async with` and `aclose()` to close its connection pool. The synchronous
+client retains its existing lifecycle and requires no explicit cleanup.
 
 ## API keys
 
