@@ -40,7 +40,8 @@ password.
 
 ## Cutting a release
 
-1. Bump `version` in `pyproject.toml` to the new `X.Y.Z`.
+1. Bump `version` in `pyproject.toml` and `__version__` in
+   `src/demografix/client.py` to the new `X.Y.Z`.
 2. Commit the bump:
 
    ```

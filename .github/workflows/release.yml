@@ -20,10 +20,12 @@ jobs:
         run: |
           tag="${GITHUB_REF_NAME#v}"
           manifest="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml","rb"))["project"]["version"])')"
+          client="$(python -c 'import ast; tree=ast.parse(open("src/demografix/client.py").read()); print(next(n.value.value for n in tree.body if isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "__version__" for t in n.targets)))')"
           echo "Tag version:      $tag"
           echo "Manifest version: $manifest"
-          if [ "$tag" != "$manifest" ]; then
-            echo "::error::Tag version ($tag) does not match pyproject.toml version ($manifest)."
+          echo "Client version:   $client"
+          if [ "$tag" != "$manifest" ] || [ "$tag" != "$client" ]; then
+            echo "::error::Tag version ($tag), manifest version ($manifest), and client version ($client) must match."
             exit 1
           fi
 
