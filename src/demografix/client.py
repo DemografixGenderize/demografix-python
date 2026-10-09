@@ -33,7 +33,7 @@ from .models import (
     Quota,
 )
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 GENDERIZE_HOST = "https://api.genderize.io"
 AGIFY_HOST = "https://api.agify.io"

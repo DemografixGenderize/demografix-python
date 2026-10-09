@@ -225,10 +225,10 @@ client retains its existing lifecycle and requires no explicit cleanup.
 
 ## API keys
 
-An API key is required. Creating one is free and includes 2,500 names per month.
+An API key is required. Creating one is free and includes 1,000 names per month.
 
 Quota counts **names, not requests**. A single-name call costs 1. A batch of 100 names costs 100. The
-free tier therefore covers 2,500 names in a month however they are split across calls.
+free tier therefore covers 1,000 names in a month however they are split across calls.
 
 Generate a key in your dashboard at [genderize.io](https://genderize.io),
 [agify.io](https://agify.io), or [nationalize.io](https://nationalize.io). One key works across all
